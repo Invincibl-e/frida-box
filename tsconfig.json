@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"lib": [
+			"ESNext"
+		],
+		"strict": true,
+		"allowJs": true,
+		"resolveJsonModule": true,
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"esModuleInterop": true,
+		"allowSyntheticDefaultImports": true,
+		"sourceMap": true,
+		"outDir": "dist",
+	},
+	"include": [
+		"index.ts"
+	]
+}

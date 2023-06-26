@@ -1,0 +1,24 @@
+{
+	"name": "frida-box",
+	"version": "1.0.0",
+	"description": "",
+	"bin": {
+		"frida-box": "./dist/index.js"
+	},
+	"scripts": {
+		"build": "tsc",
+		"start": "node dist/index.js run xx"
+	},
+	"keywords": [ "frida" ],
+	"author": "Invincible",
+	"license": "GPL-3.0-or-later",
+	"dependencies": {
+		"frida-compile": "latest",
+		"yargs": "latest"
+	},
+	"devDependencies": {
+		"@types/frida-gum": "latest",
+		"@types/node": "latest",
+		"@types/yargs": "latest"
+	}
+}
