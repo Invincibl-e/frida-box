@@ -52,3 +52,7 @@ function index() {
 }
 
 console.log(args)
+if(args._.indexOf("build")) {
+	console.log(args)
+}
+

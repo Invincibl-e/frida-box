@@ -7,7 +7,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"start": "node dist/index.js run xx"
+		"start": "node dist/index.js build xx"
 	},
 	"keywords": [ "frida" ],
 	"author": "Invincible",
