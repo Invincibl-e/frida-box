@@ -38,7 +38,7 @@ const argsParser = yargs ( hideBin ( process.argv ) )
             } )
             .check ( ( args ) =>
             {
-                if ( fs.existsSync ( args.file!! ) )
+                if ( !fs.existsSync ( args.file!! ) )
                 {
                     throw new Error ( `Script file ${ args.file } does not exist` )
                 }
@@ -84,7 +84,7 @@ const argsParser = yargs ( hideBin ( process.argv ) )
                     throw new Error ( "Either --pid or --name must be specified" )
                 }
 
-                if ( fs.existsSync ( args.file!! ) )
+                if ( !fs.existsSync ( args.file!! ) )
                 {
                     throw new Error ( `Script file ${ args.file } does not exist` )
                 }
