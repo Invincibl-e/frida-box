@@ -10,8 +10,8 @@ import args from "./args.js";
 
 function build ()
 {
-    const projectRoot: string = process.cwd ();
-    const entrypoint: string = args.$0
+    const projectRoot: string = process.cwd ()
+    const entrypoint: string = args.file as string
     const outputPath: string = args.output as string
 
     const fullOutputPath = path.isAbsolute ( outputPath ) ? outputPath : path.join ( projectRoot, outputPath );
