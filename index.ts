@@ -1,63 +1,32 @@
-import fs from "fs";
-import path from "path";
-
-import * as compiler from "frida-compile"
-import { getNodeSystem } from "frida-compile/dist/system/node.js";
-import ts from "frida-compile/ext/typescript.js";
-
-import args from "./args.js";
+import args, { BuildArgs, RunArgs } from "./args.js"
+import { build } from "./build.js"
+import { ConsoleApplication } from "./console.js";
+import { filterDevice } from "./device.js";
 
 
-function build ()
+if ( args._.includes ( "build" ) )
 {
-    const projectRoot: string = process.cwd ()
-    const entrypoint: string = args.file as string
-    const outputPath: string = args.output as string
-
-    const fullOutputPath = path.isAbsolute ( outputPath ) ? outputPath : path.join ( projectRoot, outputPath );
-    const outputDir = path.dirname ( fullOutputPath );
-
-    const system = getNodeSystem ();
-    const assets = compiler.queryDefaultAssets ( projectRoot, system );
-
-    const compilerOpts: compiler.Options = {
-        projectRoot,
-        entrypoint,
-        sourceMaps: args.sourceMaps ? "included" : "omitted",
-        compression: args.compress ? "terser" : "none",
-        assets,
-        system
-    };
-
-    const bundle = compiler.build ( {
-        ...compilerOpts,
-        onDiagnostic (
+	build ( args as unknown as BuildArgs )
+}
+else if ( args._.includes ( "run" ) )
+{
+    filterDevice ( args as unknown as RunArgs ).then ( devices =>
+    {
+        if ( devices.length === 0 )
         {
-            file,
-            start,
-            messageText
-        } )
-        {
-            if ( file !== undefined )
-            {
-                const { line, character } = ts.getLineAndCharacterOfPosition ( file, start! );
-                const message = ts.flattenDiagnosticMessageText ( messageText, "\n" );
-                console.log ( `${ file.fileName } (${ line + 1 },${ character + 1 }): ${ message }` );
-            }
-            else
-            {
-                console.log ( ts.flattenDiagnosticMessageText ( messageText, "\n" ) );
-            }
+            console.error ( "No devices found." )
+            return
         }
-    } );
+        else if ( devices.length > 1 )
+        {
+            console.error ( "Multiple devices found, please specify one." )
+            return
+        }
 
-    fs.mkdirSync ( outputDir, { recursive: true } );
-    fs.writeFileSync ( fullOutputPath, bundle! );
+        let application = new ConsoleApplication ( devices[ 0 ] )
+        application.runWithArgs ( args as unknown as RunArgs ).then( () =>
+        {
+
+        } )
+    } )
 }
-
-if ( args._.includes ( "build" )  )
-{
-    console.log ( args )
-    build()
-}
-

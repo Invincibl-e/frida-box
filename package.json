@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"start": "node dist/index.js build test/test.ts"
+		"start": "node dist/index.js run -n test test/test.js"
 	},
 	"keywords": [
 		"frida"
@@ -17,7 +17,8 @@
 	"license": "GPL-3.0-or-later",
 	"dependencies": {
 		"frida-compile": "latest",
-		"yargs": "latest"
+		"yargs": "latest",
+		"frida": "latest"
 	},
 	"devDependencies": {
 		"@types/frida-gum": "latest",
