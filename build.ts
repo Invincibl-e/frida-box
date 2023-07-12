@@ -1,4 +1,4 @@
-import fs from "fs"
+import fs from "fs/promises"
 import path from "path"
 
 import { getNodeSystem } from "frida-compile/dist/system/node.js"
@@ -8,7 +8,7 @@ import ts from "frida-compile/ext/typescript.js"
 import { BuildArgs } from "./args.js"
 
 
-export function build ( args: BuildArgs )
+export async function build ( args: BuildArgs )
 {
 	const projectRoot: string = process.cwd ()
 	const entrypoint: string = args.file as string
@@ -32,11 +32,11 @@ export function build ( args: BuildArgs )
 	const bundle = compiler.build ( {
 		...compilerOpts,
 		onDiagnostic (
-			{
-				file,
-				start,
-				messageText
-			} )
+		{
+			file,
+			start,
+			messageText
+		} )
 		{
 			if ( file !== undefined )
 			{
@@ -51,6 +51,6 @@ export function build ( args: BuildArgs )
 		}
 	} )
 
-	fs.mkdirSync ( outputDir, { recursive: true } )
-	fs.writeFileSync ( fullOutputPath, bundle! )
+	await fs.mkdir ( outputDir, { recursive: true } )
+	return fs.writeFile ( fullOutputPath, bundle! )
 }

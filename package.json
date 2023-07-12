@@ -8,7 +8,7 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"start": "node dist/index.js run -n test test/test.js"
+		"start": "node dist/index.js run -u --spawn -n com.taptap.payment.demo test/test.js"
 	},
 	"keywords": [
 		"frida"
@@ -16,11 +16,18 @@
 	"author": "Invincible",
 	"license": "GPL-3.0-or-later",
 	"dependencies": {
+		"xz-utils": "latest",
+		"axios": "latest",
+		"cli-progress": "latest",
+		"chalk": "latest",
 		"frida-compile": "latest",
 		"yargs": "latest",
 		"frida": "latest"
 	},
 	"devDependencies": {
+		"@types/axios": "latest",
+		"@types/cli-progress": "latest",
+		"@types/chalk": "latest",
 		"@types/frida-gum": "latest",
 		"@types/node": "latest",
 		"@types/yargs": "latest"

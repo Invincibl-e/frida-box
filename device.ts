@@ -2,6 +2,7 @@ import { getDeviceManager, Device, DeviceType } from 'frida';
 
 import { RunArgs } from "./args.js";
 
+
 export async function filterDevice ( args: RunArgs )
 {
 	let deviceManager = getDeviceManager ()
@@ -22,9 +23,9 @@ export async function filterDevice ( args: RunArgs )
 
 	return devices.filter( device =>
 	{
-		if ( device.type === type && args.device )
+		if ( device.type === type )
 		{
-			return device.id === args.device
+			return args.device === undefined || args.device === device.id
 		}
 	} )
 }

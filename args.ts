@@ -51,7 +51,6 @@ const argsParser = yargs ( hideBin ( process.argv ) )
 			.option ( "device", {
 				alias: "d",
 				type: "string",
-				default: "local",
 				description: "connect to device <ID>"
 			} )
 			.option ( "usb", {
