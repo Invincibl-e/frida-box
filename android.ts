@@ -2,18 +2,29 @@ import fs from 'fs';
 import { mkdir, mkdtemp, rm, rmdir } from 'fs/promises';
 import os from 'os';
 import * as path from 'path';
-import { promisify } from "util";
-import child_process from "child_process";
+import {
+    run,
+    Options,
+    SpawnOptionsWithoutStdio,
+    SpawnOptionsWithStdioTuple,
+    SpawnOptions,
+    ExecOptionsWithString, ExecOptionsWithStringThrowStderr, ExecOptionsWithBuffer
+} from "./child_process.js";
 import { createRequire } from "module";
 
 import { Device } from "frida";
 
 import { downloadFile } from "./net.js";
 import theme from "./style.js";
+import { Readable, Writable } from "stream";
+import {
+    ChildProcess,
+    ChildProcessByStdio,
+    ChildProcessWithoutNullStreams,
+    StdioNull,
+    StdioPipe
+} from "child_process";
 
-
-const exec = promisify ( child_process.exec );
-const spawn = child_process.spawn;
 
 const require = createRequire ( import.meta.url );
 
@@ -39,23 +50,13 @@ namespace AndroidDebugBridge
         id: string
         status: string
     }
-
-    export type Options = child_process.ExecOptions & child_process.SpawnOptions &
-    {
-        spawn?: boolean
-        throwStdErr?: boolean
-    }
 }
+
 
 export class AndroidDebugBridge
 {
     private id: string | null = null
     private readonly commandPrefix: string = "adb"
-
-    static DEFAULT_OPTIONS: AndroidDebugBridge.Options = {
-        spawn: false,
-        throwStdErr: true
-    }
 
     constructor ( id: string | null = null )
     {
@@ -66,50 +67,74 @@ export class AndroidDebugBridge
         }
     }
 
-    private runCommand ( command: string, options?: AndroidDebugBridge.Options )
+    async impl ( command: string, options?: Options )
     {
-        options = { ...AndroidDebugBridge.DEFAULT_OPTIONS, ...options }
-
-        if ( options.spawn )
-        {
-            let [ executable, ...args ] = `${ this.commandPrefix } ${ command }`.split(" ")
-            spawn( executable, args, { ...options, env: process.env } )
-        }
-        else
-        {
-            return exec ( `${ this.commandPrefix } ${ command }`, { encoding: "utf-8" } )
-            .then ( ( { stdout, stderr } ) =>
-            {
-                let output = `${ stdout }\n${ stderr }`
-                if ( options?.throwStdErr && stderr )
-                {
-                    throw new Error ( stderr )
-                }
-                return output.trimEnd ()
-            } )
-        }
+        // @ts-ignore
+        return await run ( `${ this.commandPrefix } ${ command }`, options )
     }
 
-    shell ( command: string, options?: AndroidDebugBridge.Options )
+    async shell ( command: string, options: SpawnOptionsWithoutStdio): Promise<ChildProcessWithoutNullStreams>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<Writable, Readable, Readable>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<Writable, Readable, null>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<Writable, null, Readable>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<null, Readable, Readable>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioNull>): Promise<ChildProcessByStdio<Writable, null, null>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<null, Readable, null>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<null, null, Readable>>
+    async shell ( command: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioNull>): Promise<ChildProcessByStdio<null, null, null>>
+    async shell ( command: string, options: SpawnOptions): Promise<ChildProcess>
+    async shell ( command: string, options: ExecOptionsWithString): Promise<{ stdout: string; stderr: string; }>
+    async shell ( command: string, options?: ExecOptionsWithStringThrowStderr): Promise<string>
+    async shell ( command: string, options: ExecOptionsWithBuffer): Promise<{ stdout: Buffer; stderr: Buffer; }>
+    async shell ( command: string, options?: Options )
     {
-        return this.runCommand ( `shell ${ command }`, options )
+        return await this.impl ( `shell ${ command }`, options )
     }
 
-    push ( source: string, destination: string, options?: AndroidDebugBridge.Options )
+    async push ( source: string, destination: string, options: SpawnOptionsWithoutStdio): Promise<ChildProcessWithoutNullStreams>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<Writable, Readable, Readable>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<Writable, Readable, null>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<Writable, null, Readable>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<null, Readable, Readable>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioNull>): Promise<ChildProcessByStdio<Writable, null, null>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<null, Readable, null>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<null, null, Readable>>
+    async push ( source: string, destination: string, options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioNull>): Promise<ChildProcessByStdio<null, null, null>>
+    async push ( source: string, destination: string, options: SpawnOptions): Promise<ChildProcess>
+    async push ( source: string, destination: string, options: ExecOptionsWithString): Promise<{ stdout: string; stderr: string; }>
+    async push ( source: string, destination: string, options?: ExecOptionsWithStringThrowStderr): Promise<string>
+    async push ( source: string, destination: string, options: ExecOptionsWithBuffer): Promise<{ stdout: Buffer; stderr: Buffer; }>
+    async push ( source: string, destination: string, options?: Options )
     {
-        return this.runCommand ( `push ${ source } ${ destination }`, options )
+        return await this.impl ( `push ${ source } ${ destination }`, options )
     }
 
-    devices ( options?: AndroidDebugBridge.Options ): Promise<AndroidDebugBridge.Device[]>
+    // @ts-ignore
+    async devices ( options: SpawnOptionsWithoutStdio): Promise<ChildProcessWithoutNullStreams>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<Writable, Readable, Readable>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioPipe, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<Writable, Readable, null>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<Writable, null, Readable>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioPipe>): Promise<ChildProcessByStdio<null, Readable, Readable>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioPipe, StdioNull, StdioNull>): Promise<ChildProcessByStdio<Writable, null, null>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioNull, StdioPipe, StdioNull>): Promise<ChildProcessByStdio<null, Readable, null>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioPipe>): Promise<ChildProcessByStdio<null, null, Readable>>
+    async devices ( options: SpawnOptionsWithStdioTuple<StdioNull, StdioNull, StdioNull>): Promise<ChildProcessByStdio<null, null, null>>
+    async devices ( options: SpawnOptions): Promise<ChildProcess>
+    async devices ( options: ExecOptionsWithString): Promise<{ stdout: string; stderr: string; }>
+    async devices ( options?: ExecOptionsWithStringThrowStderr): Promise<AndroidDebugBridge.Device[]>
+    async devices ( options: ExecOptionsWithBuffer): Promise<{ stdout: Buffer; stderr: Buffer; }>
+    async devices ( options?: Options )
     {
-        return this.runCommand ( "devices", options )!!.then ( stdout =>
+        let result = await this.impl ( "devices", options )
+        if ( options?.spawn !== true && options?.encoding !== "buffer" && options?.throwStdErr !== false )
         {
-            return stdout.split ( "\n" ).slice ( 1 ).map ( line =>
+            return ( result as string ).split ( "\n" ).slice ( 1 ).map ( line =>
             {
                 let [ id, status ] = line.split ( "\t" )
                 return { id, status }
             } )
-        } )
+        }
+        return result
     }
 }
 
@@ -159,7 +184,7 @@ export async function downloadAndRunFridaServer ( device: Device )
 
     try
     {
-        await adb.shell ( `ls ${ deviceServerPath }`, { throwStdErr: false } )
+        await adb.shell ( `ls ${ deviceServerPath }` )
     }
     catch ( e )
     {
@@ -178,7 +203,7 @@ export async function downloadAndRunFridaServer ( device: Device )
                 downloadPath
             )
 
-            await exec ( `xz -d ${ downloadPath }` )
+            await run ( `xz -d ${ downloadPath }` )
 
             await adb.push ( serverPath, deviceServerPath )
 
@@ -190,5 +215,5 @@ export async function downloadAndRunFridaServer ( device: Device )
     }
 
     console.log ( theme.info ( `Run frida server from ${ deviceServerPath }` ) )
-    await adb.shell ( `su 0 ${ deviceServerPath } &`, { spawn: true, stdio: "pipe" } )
+    await adb.shell ( `su 0 ${ deviceServerPath } &`, { spawn: true } )
 }

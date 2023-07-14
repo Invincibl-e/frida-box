@@ -61,6 +61,7 @@ else if ( args._.includes ( "run" ) )
             else if ( androidDevices.length > 1 ) throw new Error ( `Multiple Android devices ${ devices [ 0 ].id } found.` )
 
             await downloadAndRunFridaServer ( devices[ 0 ] )
+            console.log( chalk.green( "Frida server started." ) )
         }
     }
     ) ().catch ( e =>

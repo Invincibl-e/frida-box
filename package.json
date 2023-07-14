@@ -8,7 +8,8 @@
 	},
 	"scripts": {
 		"build": "tsc",
-		"start": "node dist/index.js run -u --spawn -n com.taptap.payment.demo test/test.js"
+		"test::main": "node dist/index.js run -u --spawn -n com.taptap.payment.demo test/test.js",
+		"test::child-process": "node dist/child_process.js"
 	},
 	"keywords": [
 		"frida"
