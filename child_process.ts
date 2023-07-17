@@ -82,10 +82,10 @@ export async function run
     }
 }
 
-async function test () {
-    let output = await run ( "ls -la" )
-    console.log ( output )
-}
-
-test()
+// async function test () {
+//     let output = await run ( "ls -la" )
+//     console.log ( output )
+// }
+//
+// test()
 

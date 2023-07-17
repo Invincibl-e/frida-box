@@ -77,7 +77,7 @@ export class ConsoleApplication
 
 		this.session.detached.connect ( this.onDetached.bind ( this ) );
 
-		await this.session.resume ()
+		await this.device.resume ( pid );
 	}
 
 	public async runWithArgs ( args: RunArgs )

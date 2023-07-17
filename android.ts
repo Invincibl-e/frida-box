@@ -215,5 +215,17 @@ export async function downloadAndRunFridaServer ( device: Device )
     }
 
     console.log ( theme.info ( `Run frida server from ${ deviceServerPath }` ) )
-    await adb.shell ( `su 0 ${ deviceServerPath } &`, { spawn: true } )
+    let serverProcess = await adb.shell ( `su 0 ${ deviceServerPath }`, { spawn: true } )
+    serverProcess.on( "error", ( error ) => console.log ( theme.error ( error ) ) )
+    serverProcess.on( "exit", ( code ) => console.log ( theme.info ( `Frida server exit with code ${ code }` ) ) )
+    serverProcess.stdout.on( "data", ( data ) => console.log ( theme.info ( data.toString () ) ) )
+    serverProcess.stderr.on( "data", ( data ) => console.log ( theme.error ( data.toString () ) ) )
+
+    function sleep ( ms: number )
+    {
+        return new Promise ( resolve => setTimeout ( resolve, ms ) );
+    }
+
+    await sleep ( 3000 )
+    return serverProcess
 }
